@@ -1,0 +1,58 @@
+library(tidyverse)
+library(readxl)
+library(ggplot2)
+library(dplyr)
+
+Data <- read_excel("/Users/hqn200/Desktop/Texas.xlsx")
+df <- Data                                                                      
+dim(df)
+colnames(df)
+
+library(xlsx)
+
+# for graphing purposes, assign X and Y labels to columns
+X <- df$Year
+Y <- df$Population
+# basic scatter plot with gradient and regression line
+options(scipen=999)
+ggplot(df,  ylim=c(20000000,30000000), aes(x=X, y=Y)) + 
+       geom_point() + geom_smooth(method=lm, se = FALSE) +
+       labs(x = "Year", y = "Population") +
+       labs(title = "Texas state population from 2010 to 2019") +
+       theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=9, hjust=0.5)) +
+       theme(axis.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=9))
+
+ps_2020 = lm(Population ~ Year, data=df)
+summary(ps_2020)
+
+# predict values based on linear model
+predict_values <- predict(ps_2020, data.frame(Year = c(2020,2021,2022,2023,2024)))
+predict_values
+
+# add these new predicted values into existing dataframe
+df2 = rbind(df, data.frame("Year" = c(2020:2024), "Population" = c(predict_values[1:5])))
+df2
+
+# to avoid numberic and interger decimal issues on graph, convert year to date format
+df3 <- df2
+df3$year <- as.Date(as.character(df3$Year), format = "%Y")
+
+# basic scatter plot with gradient and regression line
+# remove scientific notation first
+options(scipen=999)
+X <- df3$Year
+Y <- df3$Population
+
+ggplot(df2,  ylim=c(20000000,40000000), aes(x=X, y=Y)) + 
+  geom_point() +
+  geom_smooth(method=lm, se = FALSE) +
+  labs(x = "Year", y = "Population") +
+  labs(title = "Texas state population from 2010 to 2024") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#777777", face="bold", size=9, hjust=0.5)) +
+  theme(axis.title = element_text(family = "Trebuchet MS", color="#777777", face="bold", size=9))
+
+# print predicted value of Texas population in year 2022 and then 2024
+df2[c(13,15),]
+
+summary(df2)
+
